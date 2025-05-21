@@ -14,21 +14,21 @@ frame_count = 0
 def count_fingers(hand_landmarks):
     fingers = []
     
-    # Thumb: Check if thumb is extended (thumb tip higher than thumb base)
+    
     fingers.append(hand_landmarks.landmark[4].y < hand_landmarks.landmark[3].y)
     
-    # Check for the other fingers (index, middle, ring, pinky)
+   
     for id in [8, 12, 16, 20]:
         fingers.append(hand_landmarks.landmark[id].y < hand_landmarks.landmark[id - 2].y)
     
     return fingers
 
 def is_fist(hand_landmarks):
-    # Detect if the hand is a fist (all fingers curled)
-    for id in [8, 12, 16, 20]:  # Checking for extended fingers (index, middle, ring, pinky)
-        if hand_landmarks.landmark[id].y < hand_landmarks.landmark[id - 2].y:  # Finger tip above its base
-            return False  # Finger is not curled, not a fist
-    return True  # All fingers are curled (fist)
+    
+    for id in [8, 12, 16, 20]: 
+        if hand_landmarks.landmark[id].y < hand_landmarks.landmark[id - 2].y:  
+            return False  
+    return True  
 
 while True:
     success, frame = cap.read()
@@ -39,15 +39,15 @@ while True:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-            # Count the number of extended fingers
+          
             fingers = count_fingers(hand_landmarks)
-            finger_count = fingers.count(True)  # Count how many fingers are extended
+            finger_count = fingers.count(True) 
             
-            curr_x = hand_landmarks.landmark[8].x  # Index fingertip position
+            curr_x = hand_landmarks.landmark[8].x 
             
             frame_count += 1
             if frame_count % 5 == 0 and gesture_cooldown == 0:
-                # Detect swipe gestures (left/right)
+               
                 if prev_x is not None:
                     delta = curr_x - prev_x
                     if delta > 0.1:
@@ -60,13 +60,13 @@ while True:
                         gesture_cooldown = 10
                 prev_x = curr_x
                 
-                # Open Palm (Jump) - All fingers extended
+               
                 if finger_count == 5:
                     print("Open Palm → Jump ↑")
                     pyautogui.press('up')
                     gesture_cooldown = 10
                 
-                # Fist (Slide) - All fingers curled
+               
                 elif is_fist(hand_landmarks):
                     print("Fist → Slide ↓")
                     pyautogui.press('down')
